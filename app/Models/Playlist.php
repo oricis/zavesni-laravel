@@ -23,7 +23,7 @@ class Playlist extends Model
         return $this->belongsTo(Actor::class);
     }
     public function tracks() : BelongsToMany {
-        return $this->belongsToMany(Track::class, 'track_playlist')->withPivot('created_at', 'updated_at');
+        return $this->belongsToMany(Track::class, 'track_playlist')->withPivot('created_at', 'updated_at')->orderByPivot('created_at', 'asc');
     }
     public function genre(): BelongsTo {
         return $this->belongsTo(Genre::class);

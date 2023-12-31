@@ -60,4 +60,10 @@ class AlbumController extends Controller
     public function popular() {
         return $this->albumRepository->popular();
     }
+    public function like(string $id) {
+        return $this->albumRepository->like($id);
+    }
+    public function removeFromLiked(string $id) {
+        return $this->albumRepository->removeFromLiked($id);
+    }
 }

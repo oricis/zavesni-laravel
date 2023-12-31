@@ -19,7 +19,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
         if(Auth::hasUser()) {
             $actor = Auth::user();
         }
-        $actor = Actor::withCount('playlists')->withCount('following')->with(['following' => function($query) { $query->orderByDesc('following.created_at');},'settings','likedTracks','playlists' => function ($query) {
+        $actor = Actor::withCount('playlists')->withCount('following')->with(['likedAlbums','following' => function($query) { $query->orderByDesc('following.created_at');},'settings','likedTracks','playlists' => function ($query) {
             $query->with('tracks.owner')
                 ->with('tracks.features')
                 ->with('tracks.album')
@@ -36,7 +36,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
     function showPlaylists()
     {
         $actor = Actor::find(\auth()->user()->getAuthIdentifier());
-        return response()->json($actor->playlists);
+        return response()->json($actor->playlists->take(6));
     }
 
     function showLiked()
@@ -191,7 +191,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
                 $tracksToRecommendIds[] = $track->track_id;
             }
         }
-        $tracksToRecommend = Track::whereIn('id', $tracksToRecommendIds)->with(['owner', 'features'])->get();
+        $tracksToRecommend = Track::whereIn('id', $tracksToRecommendIds)->with(['owner', 'features'])->take(10)->get();
         return response()->json($tracksToRecommend);
     }
 

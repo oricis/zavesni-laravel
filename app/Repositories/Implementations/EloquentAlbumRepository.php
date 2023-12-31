@@ -3,11 +3,14 @@
 namespace App\Repositories\Implementations;
 
 use App\Http\Requests\StoreAlbumRequest;
+use App\Models\Actor;
 use App\Models\Album;
 use App\Models\TrackPlay;
 use App\Repositories\Interfaces\AlbumRepositoryInterface;
 use Carbon\Carbon;
+use http\Env\Response;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class EloquentAlbumRepository implements AlbumRepositoryInterface
@@ -81,5 +84,38 @@ class EloquentAlbumRepository implements AlbumRepositoryInterface
             ->get();
 
         return response()->json($popularAlbums);
+    }
+
+    function like(string $id)
+    {
+        $album = Album::findOrFail($id);
+
+        $actorId = Auth::user()->getAuthIdentifier();
+        $actor = Actor::find($actorId);
+        if($actor->likedAlbums()->find($id)){
+            $response = [
+              'message' => 'You already liked this album.',
+              'statusCode' => 422
+            ];
+            return response()->json($response)->setStatusCode(422);
+        }
+        if($album && $actor) {
+                $actor->likedAlbums()->attach($album, ['created_at' => now()]);
+                return response()->json(['message' => 'You have successfully liked an album.', 'albums' => $actor->likedAlbums()->get()], 201);
+        }
+    }
+    public function removeFromLiked(string $id)
+    {
+        $actor = Actor::find(Auth::user()->getAuthIdentifier());
+
+        if($actor) {
+            if($actor->likedAlbums()->find($id)) {
+                $album = Album::find($id);
+                if($album) {
+                    $actor->likedAlbums()->detach($album, ['deleted_at' => now()]);
+                    return response()->json()->setStatusCode(204);
+                }
+            }
+        }
     }
 }

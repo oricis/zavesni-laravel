@@ -118,7 +118,10 @@ Route::middleware('api')->group(function (){
         Route::get('/latest', [AlbumController::class, 'getLatest']);
         Route::get('/popular', [AlbumController::class, 'popular']);
         Route::get('/{id}', [AlbumController::class, 'show']);
-
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::post('/{id}/like', [AlbumController::class, 'like']);
+            Route::delete('/{id}/like/delete', [AlbumController::class, 'removeFromLiked']);
+        });
     });
 
     Route::prefix('admin')->group(function () {

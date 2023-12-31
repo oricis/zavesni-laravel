@@ -43,7 +43,7 @@ class EloquentAuthRepository implements AuthRepositoryInterface
             if(\auth()->check()) {
                 \auth()->user()->tokens()->delete();
             }
-            $token = $user->createToken('token')->plainTextToken;
+            $token = $user->createToken('token', [''])->plainTextToken;
 
             return response(['token' => $token]);
         }
