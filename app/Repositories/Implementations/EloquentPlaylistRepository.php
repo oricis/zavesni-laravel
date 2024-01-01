@@ -106,22 +106,55 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
 
     function addTracks(AddTracksToPlaylistRequest|FormRequest $request, string $id)
     {
+        $confirm = $request->get('confirm');
+
         $playlist = Playlist::with('tracks')->find($id);
 
         $tracks = $request->validated('tracks');
 
-        $tracksExist = Track::where('id', $tracks);
+        $tracksExist = Track::whereIn('id', $tracks);
 
         if(!$tracksExist){
             return response()->json(['message' => 'Track does not exist.']);
         }
-        $trackAlreadyExistsInPlaylist = $playlist->tracks()->findMany($tracks);
 
-        if (count($trackAlreadyExistsInPlaylist)) {
+        if($confirm) {
+            $playlist->tracks()->attach($tracks, ['created_at' => now()]);
+
+            return response()->json($request->get('tracks'))->setStatusCode(201);
+        }
+        $tracksAlreadyInPlaylist = $playlist->tracks()->findMany($tracks)->pluck('id')->toArray();
+
+        if (count($tracksAlreadyInPlaylist) < count($tracks)) {
+
+            return response()->json(
+                [
+                    'actions' => ['Add all', 'Add new ones'],
+                    'status' => 'warning-some',
+                    'playlistId' => $id,
+                    'tracksAlreadyInPlaylist' => $tracksAlreadyInPlaylist,
+                    'allTracksIds' => $tracks,
+                    'message' => 'Some already added',
+                    'content' => 'Some of these are already in your \''.$playlist->title.'\' playlist.'
+                ])
+                ->setStatusCode(422);
+            return response()->json(['message' => 'Track already exists in playlist.'])->setStatusCode(409);
+        }
+        if (count($tracksAlreadyInPlaylist) === count($tracks)) {
+            return response()->json(
+                [
+                    'actions' => ['Add anyway', 'Don\'t add'],
+                    'status' => 'warning-all',
+                    'playlistId' => $id,
+                    'tracksAlreadyInPlaylist' => $tracksAlreadyInPlaylist,
+                    'content' => 'These are already in your \''.$playlist->title.'\' playlist.',
+                    'message' => 'Already added'
+                ])
+                ->setStatusCode(422);
             return response()->json(['message' => 'Track already exists in playlist.'])->setStatusCode(409);
         }
         $playlist->tracks()->attach($tracks, ['created_at' => now()]);
-        return response()->json(['message' => 'Added to '.$playlist->title])->setStatusCode(201);
+        return response()->json(['message' => 'Added to '.$playlist->title, 'addedCount' => count($tracks)])->setStatusCode(201);
     }
 
     function deleteTrack(string $id, string $track)

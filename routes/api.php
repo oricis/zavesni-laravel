@@ -106,7 +106,9 @@ Route::middleware('api')->group(function (){
             Route::post('/', [PlaylistController::class, 'store']);
             Route::put('/{id}', [PlaylistController::class, 'update']);
             Route::delete('/{id}/delete', [PlaylistController::class, 'destroy']);
-            Route::post('/{id}/add-tracks', [PlaylistController::class, 'addTracks']);
+            Route::post('/{id}/add-tracks', [PlaylistController::class, 'addTrack']);
+            Route::post('/{id}/tracks/add', [PlaylistController::class, 'addTracks']);
+            Route::post('/{id}/tracks/add/confirm', [PlaylistController::class, 'addTracks']);
             Route::delete('/{playlist}/track/{track}/delete', [PlaylistController::class, 'deleteTrack']);
         });
 
