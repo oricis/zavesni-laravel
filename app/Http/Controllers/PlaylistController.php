@@ -50,8 +50,8 @@ class PlaylistController extends Controller
         return $this->playlistRepository->addTracks($request, $id);
     }
 
-    public function deleteTrack(string $id, string $track){
-        return $this->playlistRepository->deleteTrack($id, $track);
+    public function deleteTrack(string $id, string $track, string $pivotId){
+        return $this->playlistRepository->deleteTrack($id, $track, $pivotId);
     }
     public function getTracks(string $playlist) {
         return $this->playlistRepository->getTracks($playlist);

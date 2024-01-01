@@ -6,6 +6,7 @@ use App\Http\Requests\AddTracksToPlaylistRequest;
 use App\Http\Requests\StorePlaylistRequest;
 use App\Models\Playlist;
 use App\Models\Track;
+use App\Models\TrackPlaylist;
 use App\Repositories\Interfaces\PlaylistRepositoryInterface;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -119,12 +120,54 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
         }
 
         if($confirm) {
-            $playlist->tracks()->attach($tracks, ['created_at' => now()]);
+            try {
+                DB::beginTransaction();
 
-            return response()->json($request->get('tracks'))->setStatusCode(201);
+                foreach ($tracks as $track) {
+                    TrackPlaylist::create([
+                        'track_id' => $track,
+                        'playlist_id' => $playlist->id
+                    ]);
+                }
+
+                DB::commit();
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'playlistId' => $id,
+                        'addedCount' => count($tracks),
+                        'message' => 'Added to \''.$playlist->title.'\'',
+                    ])->setStatusCode(201);
+            }
+            catch (\Exception $exception) {
+                DB::rollBack();
+            }
         }
-        $tracksAlreadyInPlaylist = $playlist->tracks()->findMany($tracks)->pluck('id')->toArray();
+        $tracksAlreadyInPlaylist = $playlist->tracks()->findMany($tracks)->pluck('id')->unique()->toArray();
+        if(count($tracksAlreadyInPlaylist) == 0) {
+            try {
+                DB::beginTransaction();
 
+                foreach ($tracks as $track) {
+                    TrackPlaylist::create([
+                        'track_id' => $track,
+                        'playlist_id' => $playlist->id
+                    ]);
+                }
+
+                DB::commit();
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'playlistId' => $id,
+                        'addedCount' => count($tracks),
+                        'message' => 'Added to \''.$playlist->title.'\'',
+                    ])->setStatusCode(201);
+            }
+            catch (\Exception $exception) {
+                DB::rollBack();
+            }
+        }
         if (count($tracksAlreadyInPlaylist) < count($tracks)) {
 
             return response()->json(
@@ -138,9 +181,20 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
                     'content' => 'Some of these are already in your \''.$playlist->title.'\' playlist.'
                 ])
                 ->setStatusCode(422);
-            return response()->json(['message' => 'Track already exists in playlist.'])->setStatusCode(409);
         }
-        if (count($tracksAlreadyInPlaylist) === count($tracks)) {
+        if (count($tracksAlreadyInPlaylist) == count($tracks)) {
+            if(count($tracks) === 1) {
+                return response()->json(
+                    [
+                        'actions' => ['Add anyway', 'Don\'t add'],
+                        'status' => 'warning-all',
+                        'playlistId' => $id,
+                        'tracksAlreadyInPlaylist' => $tracksAlreadyInPlaylist,
+                        'content' => 'This track is already in your \''.$playlist->title.'\' playlist.',
+                        'message' => 'Already added'
+                    ])
+                    ->setStatusCode(422);
+            }
             return response()->json(
                 [
                     'actions' => ['Add anyway', 'Don\'t add'],
@@ -151,15 +205,12 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
                     'message' => 'Already added'
                 ])
                 ->setStatusCode(422);
-            return response()->json(['message' => 'Track already exists in playlist.'])->setStatusCode(409);
         }
-        $playlist->tracks()->attach($tracks, ['created_at' => now()]);
-        return response()->json(['message' => 'Added to '.$playlist->title, 'addedCount' => count($tracks)])->setStatusCode(201);
     }
 
-    function deleteTrack(string $id, string $track)
+    function deleteTrack(string $id, string $track, string $pivotId)
     {
-        if(!Str::isUuid($id) || !Str::isUuid($track)){
+        if(!Str::isUuid($id) || !Str::isUuid($track) || !Str::isUuid($pivotId)){
             return response()->json(['message' => 'Unexpected error..'])->setStatusCode(409);
         }
 
@@ -169,6 +220,13 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
             return response()->json(['message' => 'No playlist has been found.'])->setStatusCode(404);
         }
 
+        $pivotRowToDelete = TrackPlaylist::where(['track_id' => $track, 'playlist_id' => $id])->findOrFail($pivotId);
+
+        if($pivotRowToDelete) {
+           $pivotRowToDelete->delete();
+            return response()->json(['message' => 'You have successfully removed track from playlist.'])->setStatusCode(204);
+        }
+        return response()->json($pivotRowToDelete);
 
         $trackToDelete = $playlist->tracks()->findOrFail($track);
 

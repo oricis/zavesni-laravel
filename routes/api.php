@@ -109,7 +109,7 @@ Route::middleware('api')->group(function (){
             Route::post('/{id}/add-tracks', [PlaylistController::class, 'addTrack']);
             Route::post('/{id}/tracks/add', [PlaylistController::class, 'addTracks']);
             Route::post('/{id}/tracks/add/confirm', [PlaylistController::class, 'addTracks']);
-            Route::delete('/{playlist}/track/{track}/delete', [PlaylistController::class, 'deleteTrack']);
+            Route::delete('/{playlist}/track/{track}/delete/{pivotId}', [PlaylistController::class, 'deleteTrack']);
         });
 
     });
