@@ -24,7 +24,7 @@ class Actor extends Authenticatable
         'first_login' => 'boolean'
     ];
     public function playlists() : HasMany {
-        return $this->hasMany(Playlist::class)->with(['tracks.owner', 'tracks.features', 'tracks.album'])->withCount('tracks')->orderByDesc('created_at');
+        return $this->hasMany(Playlist::class)->withCount('tracks')->orderByDesc('created_at');
     }
     public function canAddGenre() : bool {
         return false;

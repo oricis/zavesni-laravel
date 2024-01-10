@@ -242,9 +242,9 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
         $playlist = Playlist::findOrFail($playlist);
 
         if($playlist) {
-            $tracks = $playlist->tracks()->with(['owner', 'features', 'album'])->paginate(20);
+            $tracks = $playlist->tracks()->with(['owner', 'features', 'album'])->get();
 
-            return response()->json($tracks);
+            return response()->json(['tracks' => $tracks]);
         }
     }
 }

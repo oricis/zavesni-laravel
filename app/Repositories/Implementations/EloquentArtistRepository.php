@@ -20,7 +20,7 @@ class EloquentArtistRepository implements ArtistRepositoryInterface
 
     function getAll()
     {
-        $artists = Artist::with('albums.tracks')->withCount('singles')->paginate(10);
+        $artists = Artist::with('albums')->get();
 
         return response()->json($artists);
     }

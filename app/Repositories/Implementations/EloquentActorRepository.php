@@ -16,16 +16,12 @@ class EloquentActorRepository implements ActorRepositoryInterface
 
     function show()
     {
-        if(Auth::hasUser()) {
-            $actor = Auth::user();
-        }
-        $actor = Actor::withCount('playlists')->withCount('following')->with(['likedAlbums','following' => function($query) { $query->orderByDesc('following.created_at');},'settings','likedTracks','playlists' => function ($query) {
+        $actor = Actor::withCount(['playlists', 'following'])->with(['likedAlbums','following' => function($query) { $query->orderByDesc('following.created_at');},'settings','likedTracks','playlists' => function ($query) {
             $query->with('tracks.owner')
                 ->with('tracks.features')
                 ->with('tracks.album')
-
                 ->withCount('tracks')->get();
-        }])->find($actor->id);
+        }])->find(Auth::user()->getAuthIdentifier());
 
         if($actor == null) {
             return response(['message' => 'No actor has been found.']);
@@ -36,7 +32,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
     function showPlaylists()
     {
         $actor = Actor::find(\auth()->user()->getAuthIdentifier());
-        return response()->json($actor->playlists->take(6));
+        return response()->json($actor->playlists()->get());
     }
 
     function showLiked()
@@ -205,7 +201,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
             ->groupBy('track_id')
             ->whereBetween('created_at', [$sevenDays, $now])
             ->orderByDesc('count')
-            ->take(10)
+            ->take(5)
             ->get()->pluck('track');
         /*$addPlayedCount = $trackPlayed->map(function ($item) {
             $track = $item;
