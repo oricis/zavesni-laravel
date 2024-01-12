@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use wapmorgan\Mp3Info\Mp3Info;
 
 class EloquentTrackRepository implements TrackRepositoryInterface
@@ -90,17 +91,47 @@ class EloquentTrackRepository implements TrackRepositoryInterface
         $duration = floor($audio->duration);
         $bitRate = $audio->bitRate;
 
-        $track = new Track();
-        $track->title = $request->get('title');
-        $track->owner = $request->get('owner');
-        $track->genre = $request->get('genre');
+        try {
+            DB::beginTransaction();
+            $track = new Track();
 
-        if($request->get('explicit') == 'true') {
-            $track->explicit = true;
+            $track->title = $request->get('title');
+            $track->owner_id = $request->get('owner');
+            $track->genre_id = $request->get('genre');
+
+            $track->cover = 'cover_url.S3_account';
+            $track->path = 'path_to_track.S3_account';
+            $track->plays = 0;
+            if($request->get('explicit') == 'true') {
+                $track->explicit = true;
+            } else{
+                $track->explicit = false;
+            }
+            if($request->has('album')) {
+                $track->album_id = $request->get('album');
+            }
+            $track->duration = $duration;
+            $track->save();
+
+            if($request->has('features')) {
+                foreach ($request->get('features') as $feature)
+                $track->featuring()->create([
+                    'track_id' => $track->id,
+                    'artist_id' =>$feature
+                ]);
+            }
+            DB::commit();
+            return response()->json($track);
+
         }
-        $track->duration = $duration;
-        return response()->json($track);
+        catch (\Exception $exception) {
+            DB::rollBack();
 
+            // Log the exception for debugging purposes
+
+            // Return an error response with a meaningful message
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
     }
 
     function update(FormRequest $request, string $id)

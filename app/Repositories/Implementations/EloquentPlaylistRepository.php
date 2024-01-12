@@ -24,7 +24,7 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
     function show(string $id)
     {
         $playlist = Playlist::withCount('tracks')->find($id);
-        $paginatedTracks = $playlist->tracks()->with(['owner', 'features', 'album'])->paginate(50);
+        $paginatedTracks = $playlist->tracks()->with(['owner', 'features', 'album'])->withCount('trackPlays')->paginate(50);
         if($playlist == null) return response()->json(['message' => 'No playlist has been found.'])->setStatusCode(404);
         $playlist->tracks = $paginatedTracks;
         $latestAdded = DB::table('track_playlist')
@@ -242,7 +242,7 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
         $playlist = Playlist::findOrFail($playlist);
 
         if($playlist) {
-            $tracks = $playlist->tracks()->with(['owner', 'features', 'album'])->get();
+            $tracks = $playlist->tracks()->with(['owner', 'features', 'album'])->withCount('trackPlays')->get();
 
             return response()->json(['tracks' => $tracks]);
         }

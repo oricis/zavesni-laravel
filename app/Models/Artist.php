@@ -33,4 +33,7 @@ class Artist extends Model
     public function followedBy() : BelongsToMany {
         return $this->belongsToMany(Actor::class,'following', 'artist_id', 'actor_id');
     }
+    public function featuring() {
+        return $this->hasMany(Feature::class, 'artist_id');
+    }
 }

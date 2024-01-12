@@ -18,6 +18,9 @@ class Track extends Model
     protected $casts = [
         'explicit' => 'boolean',
     ];
+    protected $fillable = [
+      'title', 'owner_id', 'genre_id', 'explicit', 'duration', 'album_id', 'path', 'cover', 'track_id', 'artist_id'
+    ];
 
     public function playlists() : BelongsToMany {
         return $this->belongsToMany(Playlist::class);
@@ -27,6 +30,9 @@ class Track extends Model
     }
     public function features() : BelongsToMany {
         return $this->belongsToMany(Artist::class, 'features');
+    }
+    public function featuring() {
+        return $this->hasMany(Feature::class, 'track_id');
     }
     public function album() : HasOne {
         return $this->hasOne(Album::class, 'id', 'album_id');
