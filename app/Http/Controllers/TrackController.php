@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddTrackRequest;
 use App\Models\Track;
 use App\Repositories\Interfaces\TrackRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,15 +28,15 @@ class TrackController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(AddTrackRequest $request)
     {
-        //
+        return $this->trackRepository->store($request);
     }
 
     /**

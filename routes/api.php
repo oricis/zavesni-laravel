@@ -131,6 +131,7 @@ Route::middleware('api')->group(function (){
         Route::get('/actors', [AdminController::class, 'actors']);
         Route::get('/artists', [AdminController::class, 'artists']);
         Route::get('/tracks', [AdminController::class, 'tracks']);
+        Route::post('/tracks/add', [TrackController::class, 'store']);
         Route::get('/albums', [AdminController::class, 'albums']);
         Route::get('/genres', [AdminController::class, 'genres']);
         Route::post('/artists/{id}/update', [AdminController::class, 'updateArtist']);

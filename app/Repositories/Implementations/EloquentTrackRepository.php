@@ -2,15 +2,18 @@
 
 namespace App\Repositories\Implementations;
 
+use App\Http\Requests\AddTrackRequest;
 use App\Models\Track;
 use App\Models\TrackPlay;
 use App\Repositories\Interfaces\TrackRepositoryInterface;
 use Bugsnag\BugsnagLaravel\Facades\Bugsnag;
 use Carbon\Carbon;
+use getID3;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use wapmorgan\Mp3Info\Mp3Info;
 
 class EloquentTrackRepository implements TrackRepositoryInterface
 {
@@ -72,9 +75,32 @@ class EloquentTrackRepository implements TrackRepositoryInterface
         }
     }
 
-    function store(FormRequest $request)
+    function store(FormRequest|AddTrackRequest $request)
     {
-        // TODO: Implement store() method.
+        if(!$request->hasFile('track')) {
+            return response()->json(['message' => 'Track not provided.', 'status' => 422])->setStatusCode(422);
+        }
+        if(!$request->hasFile('cover')) {
+            return response()->json(['message' => 'Cover image not provided.', 'status' => 422])->setStatusCode(422);
+        }
+
+        $file = $request->file('track');
+        $audio = new Mp3Info($file);
+
+        $duration = floor($audio->duration);
+        $bitRate = $audio->bitRate;
+
+        $track = new Track();
+        $track->title = $request->get('title');
+        $track->owner = $request->get('owner');
+        $track->genre = $request->get('genre');
+
+        if($request->get('explicit') == 'true') {
+            $track->explicit = true;
+        }
+        $track->duration = $duration;
+        return response()->json($track);
+
     }
 
     function update(FormRequest $request, string $id)
