@@ -74,6 +74,10 @@ class TrackController extends Controller
         //
     }
 
+    public function destroyMany(string $ids)
+    {
+        return $this->trackRepository->deleteMany($ids);
+    }
     public function popular() {
         return $this->trackRepository->popular();
     }

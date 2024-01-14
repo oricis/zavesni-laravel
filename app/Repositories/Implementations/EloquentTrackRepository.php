@@ -210,4 +210,9 @@ class EloquentTrackRepository implements TrackRepositoryInterface
 
         return response()->json($tracks);
     }
+
+    public function deleteMany($ids)
+    {
+        return response()->json($ids);
+    }
 }
