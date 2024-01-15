@@ -126,7 +126,7 @@ Route::middleware('api')->group(function (){
         });
     });
 
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware(['auth:sanctum','abilities:server:update'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index']);
         Route::get('/actors', [AdminController::class, 'actors']);
         Route::get('/artists', [AdminController::class, 'artists']);
@@ -140,7 +140,9 @@ Route::middleware('api')->group(function (){
         Route::delete('/users/{id}/delete', [AdminController::class, 'deleteUser']);
         Route::delete('/genres/{id}/delete', [AdminController::class, 'deleteGenre']);
         Route::delete('/artists/{id}/delete', [AdminController::class, 'deleteArtist']);
-       /*Route::middleware(['auth:sanctum'])->group(function () {
+    });
+    Route::prefix('admin')->group(function () {
+        /*Route::middleware(['auth:sanctum'])->group(function () {
 
        });*/
     });
