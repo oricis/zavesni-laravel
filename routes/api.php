@@ -134,6 +134,7 @@ Route::middleware('api')->group(function (){
         Route::get('/roles', [AdminController::class, 'roles']);
         Route::post('/tracks/add', [TrackController::class, 'store']);
         Route::post('/tracks/delete', [TrackController::class, 'destroyMany']);
+        Route::post('/albums/delete', [AlbumController::class, 'deleteMany']);
         Route::get('/albums', [AdminController::class, 'albums']);
         Route::get('/genres', [AdminController::class, 'genres']);
         Route::post('/artists/{id}/update', [AdminController::class, 'updateArtist']);

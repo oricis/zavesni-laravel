@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeleteManyRequest;
 use App\Http\Requests\StoreAlbumRequest;
 use App\Models\Album;
 use App\Repositories\Interfaces\AlbumRepositoryInterface;
@@ -65,5 +66,8 @@ class AlbumController extends Controller
     }
     public function removeFromLiked(string $id) {
         return $this->albumRepository->removeFromLiked($id);
+    }
+    public function deleteMany(DeleteManyRequest $request){
+        return $this->albumRepository->deleteMany($request);
     }
 }

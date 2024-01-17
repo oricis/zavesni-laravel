@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Implementations;
 
+use App\Http\Requests\DeleteManyRequest;
 use App\Http\Requests\StoreAlbumRequest;
 use App\Models\Actor;
 use App\Models\Album;
@@ -11,6 +12,7 @@ use Carbon\Carbon;
 use http\Env\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class EloquentAlbumRepository implements AlbumRepositoryInterface
@@ -116,6 +118,26 @@ class EloquentAlbumRepository implements AlbumRepositoryInterface
                     return response()->json()->setStatusCode(204);
                 }
             }
+        }
+    }
+    public function deleteMany(DeleteManyRequest $request)
+    {
+        $ids = $request->get('data');
+
+        try {
+            DB::beginTransaction();
+
+            $albumsToDelete = Album::whereIn('id', $ids)->get();
+            if($albumsToDelete->flatMap->tracks->count()) {
+                return response()->json(['response' =>
+                    ['status' => 409,
+                        'message' => 'Cannot delete album that contains tracks.']])->setStatusCode(409);
+            }
+            DB::commit();
+        }
+        catch (\Exception $exception) {
+            DB::rollBack();
+            return response()->json('exception')->setStatusCode(400);
         }
     }
 }
