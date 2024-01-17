@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddTrackRequest;
+use App\Http\Requests\DeleteManyRequest;
 use App\Models\Track;
 use App\Repositories\Interfaces\TrackRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -74,9 +75,9 @@ class TrackController extends Controller
         //
     }
 
-    public function destroyMany(string $ids)
+    public function destroyMany(DeleteManyRequest $request)
     {
-        return $this->trackRepository->deleteMany($ids);
+        return $this->trackRepository->deleteMany($request);
     }
     public function popular() {
         return $this->trackRepository->popular();

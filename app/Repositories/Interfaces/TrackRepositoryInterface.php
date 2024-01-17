@@ -2,11 +2,12 @@
 
 namespace App\Repositories\Interfaces;
 
+use App\Http\Requests\DeleteManyRequest;
 use Illuminate\Http\Request;
 
 interface TrackRepositoryInterface extends BaseRepositoryInterface
 {
     function getTrack(string $id, Request $request);
     function popular();
-    function deleteMany(string $ids);
+    function deleteMany(DeleteManyRequest $request);
 }

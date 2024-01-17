@@ -3,8 +3,11 @@
 namespace App\Repositories\Implementations;
 
 use App\Http\Requests\AddTrackRequest;
+use App\Models\Actor;
+use App\Models\LikedTrack;
 use App\Models\Track;
 use App\Models\TrackPlay;
+use App\Models\TrackPlaylist;
 use App\Repositories\Interfaces\TrackRepositoryInterface;
 use Bugsnag\BugsnagLaravel\Facades\Bugsnag;
 use Carbon\Carbon;
@@ -211,8 +214,27 @@ class EloquentTrackRepository implements TrackRepositoryInterface
         return response()->json($tracks);
     }
 
-    public function deleteMany($ids)
+    public function deleteMany($request)
     {
-        return response()->json($ids);
+        $tracksToDelete = $request->get('data');
+
+        try {
+            DB::beginTransaction();
+
+            TrackPlaylist::whereIn('track_id', $tracksToDelete)->delete();
+            TrackPlay::whereIn('track_id', $tracksToDelete)->delete();
+            LikedTrack::whereIn('track_id', $tracksToDelete)->delete();
+            Track::whereIn('id', $tracksToDelete)->delete();
+
+            DB::commit();
+
+
+            return response()->json('successfully deleted tracks');
+        }
+        catch (\Exception $exception) {
+            return response()->json('exception caught!');
+        }
+
+        return response()->json($request->get('data'));
     }
 }
