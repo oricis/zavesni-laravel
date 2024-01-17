@@ -34,6 +34,9 @@ class AdminController extends Controller
     public function genres() {
         return $this->adminRepository->genres();
     }
+    public function roles() {
+        return $this->adminRepository->roles();
+    }
     public function updateArtist(UpdateArtistRequest $request, string $id) {
         return $this->adminRepository->updateArtist($id, $request);
     }

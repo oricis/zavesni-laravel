@@ -160,6 +160,9 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
         }
         return response()->json($genresPagination);
     }
+    public function roles()
+    {
+    }
 
     function deleteGenre(string $id)
     {

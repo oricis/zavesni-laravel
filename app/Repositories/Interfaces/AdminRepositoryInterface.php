@@ -14,6 +14,8 @@ interface AdminRepositoryInterface
     function tracks();
     function albums();
     function genres();
+    function roles();
+
     function updateArtist(string $id, FormRequest $request);
     function storeArtist(FormRequest $request);
 
