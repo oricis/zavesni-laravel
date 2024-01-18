@@ -11,7 +11,7 @@ interface AdminRepositoryInterface
     function index();
     function actors();
     function artists();
-    function tracks();
+    function tracks(\Illuminate\Http\Request $request);
     function albums();
     function genres();
     function roles();

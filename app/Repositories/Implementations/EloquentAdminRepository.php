@@ -14,7 +14,7 @@ use App\Repositories\Interfaces\AdminRepositoryInterface;
 use Carbon\Carbon;
 use http\Client\Curl\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EloquentAdminRepository implements AdminRepositoryInterface
@@ -88,9 +88,16 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
         $artists = Artist::withCount('ownTracks')->paginate(10);
         return response()->json($artists);
     }
-    public function tracks()
+    public function tracks(Request $request)
     {
-        $tracksPaginator = Track::withCount('trackPlays')->with(['owner', 'features', 'album'])->paginate(10);
+
+        if($request->has('search')) {
+            $search = $request->query('search');
+            $tracksPaginator = Track::where('title','like', '%'.$search.'%')->withCount('trackPlays')->with(['owner', 'features', 'album'])->paginate(10);
+        }
+        else{
+            $tracksPaginator = Track::withCount('trackPlays')->with(['owner', 'features', 'album'])->paginate(10);
+        }
         $tracks = $tracksPaginator->items();
 
         foreach ($tracks as $track) {

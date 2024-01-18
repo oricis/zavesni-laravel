@@ -25,8 +25,8 @@ class AdminController extends Controller
     public function artists() {
         return $this->adminRepository->artists();
     }
-    public function tracks() {
-        return $this->adminRepository->tracks();
+    public function tracks(Request $request) {
+        return $this->adminRepository->tracks($request);
     }
     public function albums() {
         return $this->adminRepository->albums();
