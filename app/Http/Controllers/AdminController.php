@@ -19,20 +19,20 @@ class AdminController extends Controller
     public function index() {
         return $this->adminRepository->index();
     }
-    public function actors() {
-        return $this->adminRepository->actors();
+    public function actors(Request $request) {
+        return $this->adminRepository->actors($request);
     }
-    public function artists() {
-        return $this->adminRepository->artists();
+    public function artists(Request $request) {
+        return $this->adminRepository->artists($request);
     }
     public function tracks(Request $request) {
         return $this->adminRepository->tracks($request);
     }
-    public function albums() {
-        return $this->adminRepository->albums();
+    public function albums(Request $request) {
+        return $this->adminRepository->albums($request);
     }
-    public function genres() {
-        return $this->adminRepository->genres();
+    public function genres(Request $request) {
+        return $this->adminRepository->genres($request);
     }
     public function roles() {
         return $this->adminRepository->roles();

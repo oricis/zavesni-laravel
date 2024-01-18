@@ -71,44 +71,101 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
         }
         return response()->json(['popularGenres' => [$genrePieChartLabels, $genrePieChartData, $genrePieChartHexColor],'newUsers' => $newUsers,'averageNofTrackPerPlaylist' => $averageTP,'average' => $average,'totalTrackPlays' => $totalTrackPlays,'registered' => $latestRegistered,'totalArtists' => $totalArtists, 'totalPlaylists' => $totalPlaylists,'totalAlbums' => $totalAlbums,'totalTracks' => $totalTracks, 'createdPlaylists'=> [$labels1, $data2],'percentageOfActiveUsersInLast7Days' => [$labels1, $data1],'percentageOfActiveUsers' => $percentageLast7Days,'activeUsers' => $numberOfActiveUsersLast7Days, 'totalUsers' => $totalUsers, 'numberOfCreatedPlaylistsLast7Days' => $numberOfCreatedPlaylistsLast7Days]);
     }
-    function actors()
+    function actors(Request $request)
     {
-        $pagedResponse = Actor::paginate(10);
-        $users = $pagedResponse->items();
-
-        foreach ($users as $user) {
-            $user->formatted_created_at = Carbon::parse($user->created_at)->format('d M Y H:i:s');
-            $user->formatted_updated_at = Carbon::parse($user->updated_at)->format('d M Y H:i:s');
+        if($request->has('search')) {
+            $search = $request->query('search');
+            $pagedResponse = Actor::where('first_name', 'like', '%'.$search.'%')->paginate(10);
         }
+        else{
+            $pagedResponse = Actor::paginate(10);
+        }
+
         return response()->json($pagedResponse);
     }
 
-    function artists()
+    function artists(Request $request)
     {
-        $artists = Artist::withCount('ownTracks')->paginate(10);
+        if($request->has('search')) {
+            $search = $request->query('search');
+            $artists = Artist::where('name', 'like', '%'.$search.'%')->withCount('ownTracks')->paginate(10);
+        }
+        else{
+            $artists = Artist::withCount('ownTracks')->paginate(10);
+        }
         return response()->json($artists);
     }
     public function tracks(Request $request)
     {
+        $tracksPaginator = Track::withCount('trackPlays')->with(['owner', 'features', 'album']);
 
-        if($request->has('search')) {
-            $search = $request->query('search');
-            $tracksPaginator = Track::where('title','like', '%'.$search.'%')->withCount('trackPlays')->with(['owner', 'features', 'album'])->paginate(10);
+        if($request->has('title')) {
+            $title = $request->query('title');
+            $tracksPaginator->where('title','like', '%'.$title.'%');
         }
-        else{
-            $tracksPaginator = Track::withCount('trackPlays')->with(['owner', 'features', 'album'])->paginate(10);
-        }
-        $tracks = $tracksPaginator->items();
 
-        foreach ($tracks as $track) {
-            $track->formatted_created_at = Carbon::parse($track->created_at)->format('d M Y H:i:s');
-            $track->formatted_updated_at = Carbon::parse($track->updated_at)->format('d M Y H:i:s');
+        if($request->has('owner')) {
+            $owner = $request->query('owner');
+            $tracksPaginator->whereHas('owner', function ($subquery) use ($owner) {
+                $subquery->where('name', 'like', '%'.$owner.'%');
+            });
         }
-        return response()->json($tracksPaginator);
+
+        if($request->has('album')) {
+            $album = $request->query('album');
+            $tracksPaginator->whereHas('album', function ($subquery) use ($album){
+                $subquery->where('name', 'like', '%'.$album.'%');
+            });
+        }
+
+        if($request->has('featuring')) {
+            $featuring = $request->query('featuring');
+            $featuring = explode(',', trim($featuring));
+            $featuring = array_map('trim', $featuring);
+
+            $tracksPaginator->whereHas('featuring', function ($subquery) use ($featuring) {
+                $subquery->whereHas('artist', function ($artistQuery) use ($featuring){
+                    $artistQuery->whereIn('name', $featuring);
+                });
+            });
+        }
+        if($request->has('playsFrom')) {
+            $playsFrom = $request->query('playsFrom');
+
+            $tracksPaginator->whereHas('trackPlays', function ($query) use ($playsFrom){
+                $query->havingRaw('COUNT(id) >= ?', [$playsFrom]);
+            });
+        }
+        if($request->has('playsTo')) {
+            $playsTo = $request->query('playsTo');
+
+            $tracksPaginator->whereHas('trackPlays', function ($query) use ($playsTo){
+                $query->havingRaw('COUNT(id) <= ?', [$playsTo]);
+            });
+        }
+        if($request->has('explicit')) {
+            $explicit = $request->query('explicit');
+            $tracksPaginator->where('explicit', $explicit);
+        }
+
+        if($request->has('createdFrom')) {
+            $createdFrom = $request->query('createdFrom');
+            $carbonCreatedFrom = Carbon::parse(preg_replace('/\(.*\)/', '', $createdFrom));
+            $tracksPaginator->where('created_at', '>', $carbonCreatedFrom);
+        }
+        $result = $tracksPaginator->paginate(10);
+
+        return response()->json($result);
     }
 
-    public function albums() {
-        $albums = Album::withCount('tracks')->paginate(10);
+    public function albums(Request $request) {
+        if($request->has('search')) {
+            $search = $request->query('search');
+            $albums = Album::where('name', 'like', '%'.$search.'%')->withCount('tracks')->paginate(10);
+        }
+        else{
+            $albums = Album::withCount('tracks')->paginate(10);
+        }
 
         return response()->json($albums);
     }
@@ -156,15 +213,21 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
         $artist->save();
         return response()->json()->setStatusCode(204);
     }
-    public function genres()
+    public function genres(Request $request)
     {
-        $genresPagination = Genre::paginate(10);
-        $genres = $genresPagination->items();
+        if($request->has('search')) {
+            $search = $request->query('search');
+            $genresPagination = Genre::where('name', 'like', '%'.$search.'%')->paginate(10);
+        }
+        else{
+            $genresPagination = Genre::paginate(10);
+        }
+        /*$genres = $genresPagination->items();
 
         foreach ($genres as $genre) {
             $genre->formatted_created_at = Carbon::parse($genre->created_at)->format('d M Y H:i:s');
             $genre->formatted_updated_at = Carbon::parse($genre->updated_at)->format('d M Y H:i:s');
-        }
+        }*/
         return response()->json($genresPagination);
     }
     public function roles()
