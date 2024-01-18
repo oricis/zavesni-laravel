@@ -121,7 +121,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
         $following = \auth()->user()->following();
         $following->attach($artistExists->id, ['created_at' => now()]);
 
-        return response()->json('Successfully followed an artist!')->setStatusCode(200);
+        return response()->json('Added to your followings.')->setStatusCode(200);
     }
 
     function unfollowArtist(string $artistId)
