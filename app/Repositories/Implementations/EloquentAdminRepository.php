@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\DB;
 
 class EloquentAdminRepository implements AdminRepositoryInterface
 {
-
+    function parseDate(string $date) {
+        return Carbon::parse(preg_replace('/\(.*\)/', '', $date));
+    }
     function index()
     {
         $now = Carbon::now();
@@ -150,22 +152,22 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
 
         if($request->has('createdFrom')) {
             $createdFrom = $request->query('createdFrom');
-            $carbonCreatedFrom = Carbon::parse(preg_replace('/\(.*\)/', '', $createdFrom));
+            $carbonCreatedFrom = $this->parseDate($createdFrom);
             $tracksPaginator->where('created_at', '>=', $carbonCreatedFrom);
         }
         if($request->has('createdTo')) {
             $createdTo = $request->query('createdTo');
-            $carbonCreatedTo = Carbon::parse(preg_replace('/\(.*\)/', '', $createdTo));
+            $carbonCreatedTo = $this->parseDate($createdTo);
             $tracksPaginator->where('created_at', '<=', $carbonCreatedTo);
         }
         if($request->has('updatedFrom')) {
             $updatedFrom = $request->query('updatedFrom');
-            $carbonUpdatedFrom = Carbon::parse(preg_replace('/\(.*\)/', '', $updatedFrom));
+            $carbonUpdatedFrom = $this->parseDate($updatedFrom);
             $tracksPaginator->where('updated_at', '>=', $carbonUpdatedFrom);
         }
         if($request->has('updatedTo')) {
             $updatedTo = $request->query('updatedTo');
-            $carbonUpdatedTo = Carbon::parse(preg_replace('/\(.*\)/', '', $updatedTo));
+            $carbonUpdatedTo = $this->parseDate($updatedTo);
             $tracksPaginator->where('updated_at', '<=', $carbonUpdatedTo);
         }
         $result = $tracksPaginator->paginate(10);
@@ -174,15 +176,49 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
     }
 
     public function albums(Request $request) {
-        if($request->has('search')) {
-            $search = $request->query('search');
-            $albums = Album::where('name', 'like', '%'.$search.'%')->withCount('tracks')->paginate(10);
+        $albums = Album::withCount('tracks');
+        if($request->has('name')) {
+            $name = $request->query('name');
+            $albums->where('name', 'like', '%'.$name.'%');
         }
-        else{
-            $albums = Album::withCount('tracks')->paginate(10);
+        if($request->has('tracksCountFrom')){
+            $from = $request->query('tracksCountFrom');
+            $albums->whereHas('tracks', function ($subquery) use ($from) {
+                $subquery->havingRaw('COUNT(id) >= ?', [$from]);
+            });
         }
-
-        return response()->json($albums);
+        if($request->has('tracksCountTo')) {
+            $to = $request->query('tracksCountTo');
+            $albums->whereHas('tracks', function ($subquery) use ($to){
+               $subquery->havingRaw('COUNT(id) <= ?', [$to]);
+            });
+        }
+        if($request->has('releaseYear')) {
+            $year = $request->query('releaseYear');
+            $albums->where('release_year', $year);
+        }
+        if($request->has('createdFrom')){
+            $from = $request->query('createdFrom');
+            $carbonDate = $this->parseDate($from);
+            $albums->where('created_at', '>=', $carbonDate);
+        }
+        if($request->has('createdTo')){
+            $to = $request->query('createdTo');
+            $carbonDate = $this->parseDate($to);
+            $albums->where('created_at', '<=', $carbonDate);
+        }
+        if($request->has('updatedFrom')){
+            $from = $request->query('updatedFrom');
+            $carbonDate = $this->parseDate($from);
+            $albums->where('updated_at', '>=', $carbonDate);
+        }
+        if($request->has('updatedTo')){
+            $to = $request->query('updatedTo');
+            $carbonDate = $this->parseDate($to);
+            $albums->where('updated_at', '<=', $carbonDate);
+        }
+        $result = $albums->paginate(10);
+        return response()->json($result);
     }
     function updateArtist(string $id, UpdateArtistRequest|FormRequest $request)
     {
