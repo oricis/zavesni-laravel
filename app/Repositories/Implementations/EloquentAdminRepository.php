@@ -151,7 +151,22 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
         if($request->has('createdFrom')) {
             $createdFrom = $request->query('createdFrom');
             $carbonCreatedFrom = Carbon::parse(preg_replace('/\(.*\)/', '', $createdFrom));
-            $tracksPaginator->where('created_at', '>', $carbonCreatedFrom);
+            $tracksPaginator->where('created_at', '>=', $carbonCreatedFrom);
+        }
+        if($request->has('createdTo')) {
+            $createdTo = $request->query('createdTo');
+            $carbonCreatedTo = Carbon::parse(preg_replace('/\(.*\)/', '', $createdTo));
+            $tracksPaginator->where('created_at', '<=', $carbonCreatedTo);
+        }
+        if($request->has('updatedFrom')) {
+            $updatedFrom = $request->query('updatedFrom');
+            $carbonUpdatedFrom = Carbon::parse(preg_replace('/\(.*\)/', '', $updatedFrom));
+            $tracksPaginator->where('updated_at', '>=', $carbonUpdatedFrom);
+        }
+        if($request->has('updatedTo')) {
+            $updatedTo = $request->query('updatedTo');
+            $carbonUpdatedTo = Carbon::parse(preg_replace('/\(.*\)/', '', $updatedTo));
+            $tracksPaginator->where('updated_at', '<=', $carbonUpdatedTo);
         }
         $result = $tracksPaginator->paginate(10);
 
