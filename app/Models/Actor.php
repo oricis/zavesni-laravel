@@ -21,7 +21,8 @@ class Actor extends Authenticatable
     use SoftDeletes;
     protected $hidden = ['password'];
     protected $casts = [
-        'first_login' => 'boolean'
+        'first_login' => 'boolean',
+        'active' => 'boolean'
     ];
     public function playlists() : HasMany {
         return $this->hasMany(Playlist::class)->withCount('tracks')->orderByDesc('created_at');

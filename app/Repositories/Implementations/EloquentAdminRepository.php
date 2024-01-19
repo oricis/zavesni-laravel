@@ -75,27 +75,80 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
     }
     function actors(Request $request)
     {
-        if($request->has('search')) {
-            $search = $request->query('search');
-            $pagedResponse = Actor::where('first_name', 'like', '%'.$search.'%')->paginate(10);
+        $actors = Actor::query();
+        if($request->has('firstName')) {
+            $firstName = $request->query('firstName');
+            $actors->where('first_name', 'like', '%'.$firstName.'%');
         }
-        else{
-            $pagedResponse = Actor::paginate(10);
+        if($request->has('lastName')) {
+            $lastName = $request->query('lastName');
+            $actors->where('last_name', 'like', '%'.$lastName.'%');
         }
-
-        return response()->json($pagedResponse);
+        if($request->has('email')) {
+            $email = $request->query('email');
+            $actors->where('email', 'like','%'.$email.'%');
+        }
+        if($request->has('active')) {
+            $active = $request->query('active');
+            $actors->where('active', $active);
+        }
+        if($request->has('createdFrom')) {
+            $createdFrom = $request->query('createdFrom');
+            $actors->where('created_at', '>=', $this->parseDate($createdFrom));
+        }
+        if($request->has('createdTo')) {
+            $createdTo = $request->query('createdTo');
+            $actors->where('created_at', '<=', $this->parseDate($createdTo));
+        }
+        if($request->has('updatedFrom')) {
+            $updatedFrom = $request->query('updatedFrom');
+            $actors->where('updated_at', '>=', $this->parseDate($updatedFrom));
+        }
+        if($request->has('updatedTo')) {
+            $updatedTo = $request->query('updatedTo');
+            $actors->where('updated_at', '<=', $this->parseDate($updatedTo));
+        }
+        $result = $actors->paginate(10);
+        return response()->json($result);
     }
 
     function artists(Request $request)
     {
-        if($request->has('search')) {
-            $search = $request->query('search');
-            $artists = Artist::where('name', 'like', '%'.$search.'%')->withCount('ownTracks')->paginate(10);
+        $artists = Artist::query()->withCount('ownTracks');
+        if($request->has('name')) {
+            $name = $request->query('name');
+            $artists->where('name', 'like', '%'.$name.'%');
         }
-        else{
-            $artists = Artist::withCount('ownTracks')->paginate(10);
+        if($request->has('tracksCountFrom')) {
+            $from = $request->query('tracksCountFrom');
+            $artists->whereHas('ownTracks', function ($query) use ($from){
+               $query->havingRaw('COUNT(id) >= ?', [$from]);
+            });
         }
-        return response()->json($artists);
+        if($request->has('tracksCountTo')) {
+            $to = $request->query('tracksCountTo');
+            $artists->whereHas('ownTracks', function ($query) use ($to) {
+                $query->havingRaw('COUNT(id) <= ?', [$to]);
+            });
+        }
+        if($request->has('createdFrom')) {
+            $createdFrom = $request->query('createdFrom');
+            $artists->where('created_at', '>=', $this->parseDate($createdFrom));
+        }
+        if($request->has('createdTo')) {
+            $createdTo = $request->query('createdTo');
+            $artists->where('created_at', '<=', $this->parseDate($createdTo));
+        }
+        if($request->has('updatedFrom')) {
+            $updatedFrom = $request->query('updatedFrom');
+            $artists->where('updated_at', '>=', $this->parseDate($updatedFrom));
+        }
+        if($request->has('updatedTo')) {
+            $updatedTo = $request->query('updatedTo');
+            $artists->where('updated_at', '<=', $this->parseDate($updatedTo));
+        }
+        $result = $artists->paginate(10);
+        return response()->json($result);
     }
     public function tracks(Request $request)
     {
@@ -152,23 +205,19 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
 
         if($request->has('createdFrom')) {
             $createdFrom = $request->query('createdFrom');
-            $carbonCreatedFrom = $this->parseDate($createdFrom);
-            $tracksPaginator->where('created_at', '>=', $carbonCreatedFrom);
+            $tracksPaginator->where('created_at', '>=', $this->parseDate($createdFrom));
         }
         if($request->has('createdTo')) {
             $createdTo = $request->query('createdTo');
-            $carbonCreatedTo = $this->parseDate($createdTo);
-            $tracksPaginator->where('created_at', '<=', $carbonCreatedTo);
+            $tracksPaginator->where('created_at', '<=', $this->parseDate($createdTo));
         }
         if($request->has('updatedFrom')) {
             $updatedFrom = $request->query('updatedFrom');
-            $carbonUpdatedFrom = $this->parseDate($updatedFrom);
-            $tracksPaginator->where('updated_at', '>=', $carbonUpdatedFrom);
+            $tracksPaginator->where('updated_at', '>=', $this->parseDate($updatedFrom));
         }
         if($request->has('updatedTo')) {
             $updatedTo = $request->query('updatedTo');
-            $carbonUpdatedTo = $this->parseDate($updatedTo);
-            $tracksPaginator->where('updated_at', '<=', $carbonUpdatedTo);
+            $tracksPaginator->where('updated_at', '<=', $this->parseDate($updatedTo));
         }
         $result = $tracksPaginator->paginate(10);
 
@@ -199,23 +248,19 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
         }
         if($request->has('createdFrom')){
             $from = $request->query('createdFrom');
-            $carbonDate = $this->parseDate($from);
-            $albums->where('created_at', '>=', $carbonDate);
+            $albums->where('created_at', '>=', $this->parseDate($from));
         }
         if($request->has('createdTo')){
             $to = $request->query('createdTo');
-            $carbonDate = $this->parseDate($to);
-            $albums->where('created_at', '<=', $carbonDate);
+            $albums->where('created_at', '<=', $this->parseDate($to));
         }
         if($request->has('updatedFrom')){
             $from = $request->query('updatedFrom');
-            $carbonDate = $this->parseDate($from);
-            $albums->where('updated_at', '>=', $carbonDate);
+            $albums->where('updated_at', '>=', $this->parseDate($from));
         }
         if($request->has('updatedTo')){
             $to = $request->query('updatedTo');
-            $carbonDate = $this->parseDate($to);
-            $albums->where('updated_at', '<=', $carbonDate);
+            $albums->where('updated_at', '<=', $this->parseDate($to));
         }
         $result = $albums->paginate(10);
         return response()->json($result);
@@ -266,20 +311,36 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
     }
     public function genres(Request $request)
     {
-        if($request->has('search')) {
-            $search = $request->query('search');
-            $genresPagination = Genre::where('name', 'like', '%'.$search.'%')->paginate(10);
+        $genres = Genre::query();
+        if($request->has('name')) {
+            $name = $request->query('name');
+            $genres->where('name', 'like', '%'.$name.'%');
         }
-        else{
-            $genresPagination = Genre::paginate(10);
+        if($request->has('createdFrom')) {
+            $from = $request->query('createdFrom');
+            $genres->where('created_at', '>=', $this->parseDate($from));
         }
+        if($request->has('createdTo')) {
+            $to = $request->query('createdTo');
+            $genres->where('created_at', '<=', $this->parseDate($to));
+        }
+        if($request->has('updatedFrom')) {
+            $from = $request->query('updatedFrom');
+            $genres->where('updated_at', '>=', $this->parseDate($from));
+        }
+        if($request->has('updatedTo')) {
+            $to = $request->query('updatedTo');
+            $genres->where('updated_at', '<=', $this->parseDate($to));
+        }
+
+        $result = $genres->paginate(10);
         /*$genres = $genresPagination->items();
 
         foreach ($genres as $genre) {
             $genre->formatted_created_at = Carbon::parse($genre->created_at)->format('d M Y H:i:s');
             $genre->formatted_updated_at = Carbon::parse($genre->updated_at)->format('d M Y H:i:s');
         }*/
-        return response()->json($genresPagination);
+        return response()->json($result);
     }
     public function roles()
     {
