@@ -152,7 +152,7 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
     }
     public function tracks(Request $request)
     {
-        $tracksPaginator = Track::withCount('trackPlays')->with(['owner', 'features', 'album']);
+        $tracksPaginator = Track::withCount('trackPlays')->with(['owner.albums', 'features', 'album']);
 
         if($request->has('title')) {
             $title = $request->query('title');
