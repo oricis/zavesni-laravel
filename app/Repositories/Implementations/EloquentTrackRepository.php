@@ -140,10 +140,10 @@ class EloquentTrackRepository implements TrackRepositoryInterface
     function update(FormRequest|AddTrackRequest $request, string $id)
     {
         if(!$request->hasFile('track')) {
-            return response()->json(['message' => 'Track not provided.', 'status' => 422])->setStatusCode(422);
+            return response()->json(['msg' => 'Track not provided.', 'status' => 422])->setStatusCode(422);
         }
         if(!$request->hasFile('cover')) {
-            return response()->json(['message' => 'Cover image not provided.', 'status' => 422])->setStatusCode(422);
+            return response()->json(['msg' => 'Cover image not provided.', 'status' => 422])->setStatusCode(422);
         }
         return response()->json(['request'=> $request->get('title'), 'id' => $id]);
     }
