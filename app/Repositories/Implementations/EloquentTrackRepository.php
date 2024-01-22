@@ -14,9 +14,14 @@ use Carbon\Carbon;
 use getID3;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Image;
+use Intervention\Image\ImageManager;
 use wapmorgan\Mp3Info\Mp3Info;
 
 class EloquentTrackRepository implements TrackRepositoryInterface
@@ -81,6 +86,18 @@ class EloquentTrackRepository implements TrackRepositoryInterface
 
     function store(FormRequest|AddTrackRequest $request)
     {
+        $image = $request->file('cover');
+        $imageName = time() . '.' . $image->getClientOriginalExtension();
+
+        Storage::disk('public')->put($imageName, $image);
+        $manager = new ImageManager(new Driver());
+
+        $imageRead = $manager->read(Storage::disk('public')->get($imageName));
+
+        $imageRead->scale(50);
+
+        $imageRead->toPng()->save('images/foo.png');
+        return response()->json($image);
         if(!$request->hasFile('track')) {
             return response()->json(['message' => 'Track not provided.', 'status' => 422])->setStatusCode(422);
         }
@@ -90,6 +107,8 @@ class EloquentTrackRepository implements TrackRepositoryInterface
 
         $file = $request->file('track');
         $audio = new Mp3Info($file);
+        $image = $request->file('cover');
+
 
         $duration = floor($audio->duration);
         $bitRate = $audio->bitRate;
