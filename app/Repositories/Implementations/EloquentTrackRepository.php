@@ -87,16 +87,11 @@ class EloquentTrackRepository implements TrackRepositoryInterface
     function store(FormRequest|AddTrackRequest $request)
     {
         $image = $request->file('cover');
+        $track = $request->file('track');
         $imageName = time() . '.' . $image->getClientOriginalExtension();
 
-        Storage::disk('public')->put($imageName, $image);
-        $manager = new ImageManager(new Driver());
+        //Storage::disk('public')->put($imageName, $image);
 
-        $imageRead = $manager->read(Storage::disk('public')->get($imageName));
-
-        $imageRead->scale(50);
-
-        $imageRead->toPng()->save('images/foo.png');
         return response()->json($image);
         if(!$request->hasFile('track')) {
             return response()->json(['message' => 'Track not provided.', 'status' => 422])->setStatusCode(422);

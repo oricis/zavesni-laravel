@@ -225,10 +225,16 @@ $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->coun
     }
 
     public function albums(Request $request) {
-        $albums = Album::withCount('tracks');
+        $albums = Album::withCount('tracks')->with('artist');
         if($request->has('name')) {
             $name = $request->query('name');
             $albums->where('name', 'like', '%'.$name.'%');
+        }
+        if($request->has('master')) {
+            $master = $request->query('master');
+            $albums->whereHas('artist', function ($query) use ($master){
+               $query->where('name', 'like', '%'.$master.'%');
+            });
         }
         if($request->has('tracksCountFrom')){
             $from = $request->query('tracksCountFrom');
