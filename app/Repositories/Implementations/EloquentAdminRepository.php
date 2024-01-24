@@ -36,7 +36,7 @@ class EloquentAdminRepository implements AdminRepositoryInterface
         $averageNumberOfPlaylistsPerUser = Playlist::select('actor_id', DB::raw('Count(id) as count'))->groupBy('actor_id')->get();
         $totalUsersWithPlaylist = $averageNumberOfPlaylistsPerUser->count();
         $totalPlaylists1 = $averageNumberOfPlaylistsPerUser->sum('count');
-        $averageNofTracksPerPlaylist = Playlist::select('id', DB::raw('COUNT(tp.playlist_id) as count'))->join('track_playlist as tp', 'playlists.id', '=', 'tp.playlist_id')->groupBy('id')->get();
+        $averageNofTracksPerPlaylist = Playlist::select('playlists.id', DB::raw('COUNT(tp.playlist_id) as count'))->join('track_playlist as tp', 'playlists.id', '=', 'tp.playlist_id')->groupBy('playlists.id')->get();
         $sumOfTrackInPlaylists = $averageNofTracksPerPlaylist->sum('count');
         $averageTP = round($sumOfTrackInPlaylists / $averageNofTracksPerPlaylist->count(),2);
         $average = round($totalPlaylists1 / $totalUsersWithPlaylist, 2);

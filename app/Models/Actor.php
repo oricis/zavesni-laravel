@@ -49,6 +49,6 @@ class Actor extends Authenticatable
         return $this->belongsToMany(Genre::class, 'actor_genre_preferences');
     }
     public function likedAlbums() : BelongsToMany {
-        return $this->belongsToMany(Album::class, 'liked_albums');
+        return $this->belongsToMany(Album::class, 'liked_albums')->orderByDesc('liked_albums.created_at');
     }
 }
