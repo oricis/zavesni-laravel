@@ -23,10 +23,11 @@ class AddTrackRequest extends FormRequest
     {
         return [
             'title' => 'required|string',
-            'owner' => 'required|string|uuid',
+            'owner' => 'required|uuid',
             'cover' => 'required',
-            'track' => 'required',
-            'genre' => 'required|string|uuid',
+            'track' => 'required|mimes:mp3,wav',
+            'genre' => 'required|uuid',
+            'album' => 'nullable|sometimes|uuid',
             'explicit' => 'nullable'
         ];
     }

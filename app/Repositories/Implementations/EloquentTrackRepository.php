@@ -86,13 +86,78 @@ class EloquentTrackRepository implements TrackRepositoryInterface
 
     function store(FormRequest|AddTrackRequest $request)
     {
+        if(!($request->has('track') && $request->file('track')->isValid())) {
+            return response()->json(['msg' => 'Audio file is required.', 'status' => 422])->setStatusCode(422);
+        }
+        if(!($request->has('cover') && $request->file('cover')->isValid())) {
+            return response()->json(['msg' => 'Cover image is required.', 'status' => 422])->setStatusCode(422);
+        }
+
+        //track
+        try {
+            $track = $request->file('track');
+            $trackName = time().'.'.$track->getClientOriginalName();
+            $audio = new Mp3Info($track);
+            $duration = floor($audio->duration);
+            $track->storeAs('uploads', $track->getClientOriginalName());
+            Storage::disk('public')->put($trackName, $track);
+            $trackPath = Storage::disk('public')->url($trackName);
+            try {
+                DB::beginTransaction();
+                $track = new Track();
+
+                $track->title = $request->get('title');
+                $track->owner_id = $request->get('owner');
+                $track->genre_id = $request->get('genre');
+
+                $track->cover = 'cover_url.S3_account';
+                $track->path = storage_path($trackPath);
+                $track->plays = 0;
+                if($request->get('explicit') == 'true') {
+                    $track->explicit = true;
+                } else{
+                    $track->explicit = false;
+                }
+                if($request->has('album')) {
+                    $track->album_id = $request->get('album');
+                }
+                $track->duration = $duration;
+                $track->save();
+
+                if($request->has('features')) {
+                    foreach ($request->get('features') as $feature)
+                        $track->featuring()->create([
+                            'track_id' => $track->id,
+                            'artist_id' =>$feature
+                        ]);
+                }
+                DB::commit();
+
+                return response()->json('created track');
+            }
+            catch (\Exception $exception) {
+                DB::rollBack();
+
+                return response()->json($exception->getMessage());
+            }
+        }
+        catch (\Exception $exception) {
+            $user = "Anonymous";
+            if(Auth::hasUser()){
+                $user = Auth::user()->email;
+            }
+            Bugsnag::notifyException(new \Exception('User: '.$user.'; Exception'.$exception->getMessage()));
+            return response()->json('Fatal error!');
+        }
+        //Storage::disk('public')->put($trackName, $track);
+
+        //cover
         $image = $request->file('cover');
-        $track = $request->file('track');
         $imageName = time() . '.' . $image->getClientOriginalExtension();
 
         //Storage::disk('public')->put($imageName, $image);
 
-        return response()->json($image);
+        return response()->json(['name' => $track->getClientOriginalName(),'duration' => $duration, 'size' => $audio->_fileSize]);
         if(!$request->hasFile('track')) {
             return response()->json(['message' => 'Track not provided.', 'status' => 422])->setStatusCode(422);
         }
