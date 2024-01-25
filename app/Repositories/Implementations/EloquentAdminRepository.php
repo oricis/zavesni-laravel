@@ -44,7 +44,7 @@ class EloquentAdminRepository implements AdminRepositoryInterface
         $numberOfActiveUsersLast7Days = TrackPlay::select('actor_id')->whereBetween('created_at',[$sevenDays, $now])->groupBy('actor_id')->distinct('actor_id')->get()->count();
         $newUsers = Actor::whereBetween('created_at', [$sevenDays, $now])->count();
         $percentageLast7Days = round(($numberOfActiveUsersLast7Days / $totalUsers) * 100, 2);
-$latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->count();
+        $latestRegistered = Actor::whereBetween('created_at', [$sevenDays1, $now])->count();
         $activeUsersData = [];
         $labels1 = [];
         $data1 = [];
