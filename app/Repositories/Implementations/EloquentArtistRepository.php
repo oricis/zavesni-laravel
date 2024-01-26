@@ -77,7 +77,9 @@ class EloquentArtistRepository implements ArtistRepositoryInterface
     function show(string $id)
     {
         try{
-            $artist = Artist::with([
+            $artist = Artist::
+                withCount('followedBy')
+                ->with([
                 'ownTracks' => function($query) {
                     $query->with(['features', 'owner', 'album'])->orderByDesc('plays')->take(5);
                 },
@@ -92,6 +94,14 @@ class EloquentArtistRepository implements ArtistRepositoryInterface
             ])
                 ->withCount(['albums', 'featureTracks', 'ownTracks'])
                 ->findOrFail($id);
+
+            $now = Carbon::now();
+            $time = $now->copy()->subMonth();
+
+            $ownTrackIds = $artist->ownTracks()->pluck('id');
+            $tracks = Track::whereHas('trackPlays')->whereIn('id', $ownTrackIds)->pluck('id');
+            $uniqueMonthlyActors = TrackPlay::whereIn('track_id', $tracks)->whereBetween('created_at', [$time, $now])->get()->pluck('actor_id')->filter()->unique();
+            $artist->monthly_listeners = count($uniqueMonthlyActors);
             $artist->featured_albums = $artist->featureTracks->pluck('album')->filter()->unique()
                 ->each(function ($album) use ($artist) {
                     $album->loadCount('tracks');
