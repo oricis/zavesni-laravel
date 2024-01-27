@@ -70,11 +70,11 @@ class EloquentActorRepository implements ActorRepositoryInterface
             $alreadyLiked = $actor->likedTracks()->find($track);
 
             if($alreadyLiked){
-                return response()->json(['message' => 'You have already liked this track'], 409);
+                return response()->json(['message' => 'You have already liked this track.'], 409);
             }
             $actor->likedTracks()->attach($trackExists, ['created_at' => now()]);
 
-            return response()->json(['message' => 'You have successfully liked a track.'], 201);
+            return response()->json(['message' => 'Added to Liked tracks'], 201);
         }
         return response()->json(['message' => 'No actor has been found']);
 
