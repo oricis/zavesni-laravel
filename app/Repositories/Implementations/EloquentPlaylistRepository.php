@@ -96,9 +96,6 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
         if($playlist == null)
             return response()->json(['message' => 'No playlist has been found.'])->setStatusCode(404);
 
-        if($playlist->tracks_count > 0)
-            return response()->json(['message' => 'Cannot delete playlist that contains tracks.'])->setStatusCode(409);
-
         $playlist->delete();
         $playlist->save();
 
