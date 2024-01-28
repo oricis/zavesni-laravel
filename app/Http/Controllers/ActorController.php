@@ -53,4 +53,8 @@ class ActorController extends Controller
     public function recentlyPlayed() {
         return $this->actorRepository->recentlyPlayed();
     }
+
+    public function updateSettings(Request $request) {
+        return $this->actorRepository->updateSettings($request);
+    }
 }

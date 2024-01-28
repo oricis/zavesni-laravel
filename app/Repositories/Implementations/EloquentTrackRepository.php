@@ -288,7 +288,7 @@ class EloquentTrackRepository implements TrackRepositoryInterface
             ->whereBetween('created_at', [$sevenDays, $now])
             ->groupBy('track_id')
             ->havingRaw('COUNT(track_id) > 5') // pustana vise od n puta ukupno
-            ->havingRaw('COUNT(DISTINCT actor_id) > 4') // vise od n korisnika
+            ->havingRaw('COUNT(DISTINCT actor_id) > 1') // vise od n korisnika
             ->orderByDesc(\DB::raw('COUNT(track_id)'))
             ->take(20);
 

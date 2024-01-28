@@ -7,6 +7,7 @@ use App\Models\Actor;
 use App\Models\Artist;
 use App\Models\Track;
 use App\Models\TrackPlay;
+use App\Models\UserSettings;
 use App\Repositories\Interfaces\ActorRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -233,5 +234,21 @@ class EloquentActorRepository implements ActorRepositoryInterface
             ->take(5)->get()->pluck('track');
 
         return response()->json($tracks);
+    }
+
+    function updateSettings($request) {
+
+        if($request->has('value') && $request->has('setting')){
+            $actor = \auth()->user()->getAuthIdentifier();
+            $settings = UserSettings::where('actor_id', $actor)->first();
+            if($request->get('setting') == 'history') {
+                $settings->history = $request->get('value');
+            }
+            else if($request->get('setting') == 'explicit') {
+                $settings->explicit = $request->get('value');
+            }
+            $settings->save();
+            return response()->json($settings);
+        }
     }
 }

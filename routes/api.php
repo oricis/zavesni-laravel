@@ -59,6 +59,9 @@ Route::middleware('api')->group(function (){
             //follow
             Route::post('/artists/{artist}/follow', [ActorController::class, 'followArtist']);
             Route::delete('/artists/{artist}/unfollow', [ActorController::class, 'unfollowArtist']);
+
+            //settings
+            Route::post('/settings/update', [ActorController::class, 'updateSettings']);
         });
     });
 

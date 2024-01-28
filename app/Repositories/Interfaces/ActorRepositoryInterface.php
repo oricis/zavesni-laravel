@@ -3,6 +3,7 @@
 namespace App\Repositories\Interfaces;
 
 use App\Http\Requests\LikeTrackRequest;
+use http\Client\Request;
 
 interface ActorRepositoryInterface
 {
@@ -17,4 +18,5 @@ interface ActorRepositoryInterface
     function recommendTracks();
     function favoriteTracksInLast7Days();
     function recentlyPlayed();
+    function updateSettings(\Illuminate\Http\Request $request);
 }

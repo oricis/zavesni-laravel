@@ -16,6 +16,10 @@ class UserSettings extends Model
     protected $fillable = [
         'explicit', 'history'
     ];
+    protected $casts = [
+        'explicit' => 'boolean',
+        'history' => 'boolean'
+    ];
     public function user() : BelongsTo {
         return $this->belongsTo(Actor::class);
     }
