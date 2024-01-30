@@ -33,7 +33,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
     function showPlaylists()
     {
         $actor = Actor::find(\auth()->user()->getAuthIdentifier());
-        return response()->json($actor->playlists()->get())->setStatusCode(500);
+        return response()->json($actor->playlists()->get())->setStatusCode(200);
     }
 
     function showLiked()

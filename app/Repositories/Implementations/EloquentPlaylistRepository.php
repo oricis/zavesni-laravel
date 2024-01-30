@@ -98,10 +98,8 @@ class EloquentPlaylistRepository implements PlaylistRepositoryInterface
 
 
         $tracksPlaylistDelete = TrackPlaylist::where('playlist_id', $playlist->id)->delete();
-        if($tracksPlaylistDelete) {
             $playlist->delete();
             $playlist->save();
-        }
 
 
         return response()->json()->setStatusCode(204);
