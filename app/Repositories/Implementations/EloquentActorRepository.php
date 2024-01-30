@@ -33,7 +33,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
     function showPlaylists()
     {
         $actor = Actor::find(\auth()->user()->getAuthIdentifier());
-        return response()->json($actor->playlists()->get());
+        return response()->json($actor->playlists()->get())->setStatusCode(500);
     }
 
     function showLiked()
@@ -178,7 +178,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
             ->groupBy('actor_id')
             ->havingRaw('COUNT(DISTINCT track_id) >= ?', [10])
             ->pluck('actor_id')
-            ->unique()->toArray();
+            ->unique(20)->toArray();
 
         $tracksOfSimiliarUsers = TrackPlay::whereIn('actor_id', $otherSimiliarUsers)->get();
         $tracksToRecommendIds = [];
