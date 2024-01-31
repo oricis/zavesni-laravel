@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-Route::middleware('api')->group(function (){
+Route::middleware(['api', 'log.route'])->group(function (){
     Route::prefix('search')->group(function () {
         Route::get('/', [\App\Http\Controllers\SearchController::class, 'search']);
     });
