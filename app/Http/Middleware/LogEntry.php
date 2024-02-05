@@ -18,6 +18,7 @@ class LogEntry
     {
         $response = $next($request);
 
+
         if(app()->environment('local')) {
             $log = [
                 "USER" => auth()->user(),
