@@ -25,7 +25,7 @@ class EloquentActorRepository implements ActorRepositoryInterface
         }])->find(Auth::user()->getAuthIdentifier());
 
         if($actor == null) {
-            return response(['message' => 'No actor has been found.']);
+            return response(['message' => 'No actor has been found.'])->setStatusCode(401);
         }
         return response($actor, 200);
     }
