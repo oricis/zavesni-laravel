@@ -30,6 +30,10 @@ Route::middleware(['api', 'log.route'])->group(function (){
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/register', [AuthController::class, 'register']);
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/token', [AuthController::class, 'getToken']);
+            Route::delete('/token', [AuthController::class, 'revokeToken']);
+        });
     });
 
     Route::prefix('genres')->group(function () {

@@ -235,6 +235,7 @@ class EloquentTrackRepository implements TrackRepositoryInterface
     function getTrack(string $id, Request $request)
     {
         $play = new TrackPlay();
+        return;
         $actor = \auth('sanctum')->user()->getAuthIdentifier();
         if($actor) {
             $play->actor_id = $actor;

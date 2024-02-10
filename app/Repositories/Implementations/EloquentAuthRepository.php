@@ -58,4 +58,21 @@ class EloquentAuthRepository implements AuthRepositoryInterface
         }
         return response(['message' => "Successfully logged out!"], 200);
     }
+
+    public function getToken()
+    {
+        $user = Auth::hasUser();
+        if(!$user) {
+            return response()->json(['token' => null]);
+        }
+        return response()->json(['token' => $user]);
+    }
+    public function revokeToken()
+    {
+        $user = Actor::findOrFail(\auth()->user()->getAuthIdentifier());
+
+        $user->tokens()->delete();
+
+        return response([],204);
+    }
 }

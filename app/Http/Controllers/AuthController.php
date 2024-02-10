@@ -28,4 +28,10 @@ class AuthController extends Controller
     public function logout() {
         return $this->authRepository->logout();
     }
+    public function getToken() {
+        return $this->authRepository->getToken();
+    }
+    public function revokeToken() {
+        return $this->authRepository->revokeToken();
+    }
 }
