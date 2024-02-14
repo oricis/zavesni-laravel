@@ -235,10 +235,10 @@ class EloquentTrackRepository implements TrackRepositoryInterface
     function getTrack(string $id, Request $request)
     {
         $play = new TrackPlay();
-        return;
-        $actor = \auth('sanctum')->user()->getAuthIdentifier();
+        $actor = \auth('sanctum')->user();
         if($actor) {
-            $play->actor_id = $actor;
+            $actor_id = $actor->getAuthIdentifier();
+            $play->actor_id = $actor_id;
         }
 
         $play->track_id = $id;
@@ -283,15 +283,15 @@ class EloquentTrackRepository implements TrackRepositoryInterface
     function popular()
     {
         $now = Carbon::now();
-        $sevenDays = $now->copy()->subDays(7);
+        $sevenDays = $now->copy()->subDays(30);
 
         $popularLastSevenDays = TrackPlay::select('track_id')
             ->whereBetween('created_at', [$sevenDays, $now])
             ->groupBy('track_id')
             ->havingRaw('COUNT(track_id) > 5') // pustana vise od n puta ukupno
-            ->havingRaw('COUNT(DISTINCT actor_id) > 1') // vise od n korisnika
+            ->havingRaw('COUNT(DISTINCT actor_id) > 0') // vise od n korisnika
             ->orderByDesc(\DB::raw('COUNT(track_id)'))
-            ->take(20);
+            ->take(10);
 
         $tracks = Track::with(['owner', 'features', 'album'])
             ->whereIn('id', $popularLastSevenDays)

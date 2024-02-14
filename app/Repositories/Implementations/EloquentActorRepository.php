@@ -87,9 +87,9 @@ class EloquentActorRepository implements ActorRepositoryInterface
         try{
             if(Auth::hasUser()){
                 $actorId = Auth::user()->getAuthIdentifier();
-                $actor = Actor::findOrFail($actorId)
+                $actor = Actor::find($actorId)
                 ;
-                $trackToRemove = $actor->likedTracks()->findOrFail($id."A4");
+                $trackToRemove = $actor->likedTracks()->findOrFail($id);
 
                 if($trackToRemove) {
                     $actor->likedTracks()->updateExistingPivot($trackToRemove->id, ['deleted_at' => now()]);

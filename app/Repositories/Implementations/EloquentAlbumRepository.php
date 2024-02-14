@@ -63,7 +63,7 @@ class EloquentAlbumRepository implements AlbumRepositoryInterface
 
     function getLatest()
     {
-        $latest = Album::orderByDesc('created_at')->take(6)->get();
+        $latest = Album::withCount('tracks')->orderByDesc('created_at')->take(6)->get();
 
         return response()->json($latest);
     }
