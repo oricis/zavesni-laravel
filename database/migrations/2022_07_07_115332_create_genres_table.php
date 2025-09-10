@@ -13,13 +13,21 @@ return new class extends Migration
     {
         Schema::create('genres', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('parent_id')->references('id')->on('genres');
+            $table->uuid('parent_id')->nullable();
             $table->string('name');
             $table->string('cover');
             $table->string('hex_color');
 
-            $table->softDeletesDatetime();
+            $table->softDeletes();
             $table->timestamps();
+        });
+
+        // Add the foreign key
+        Schema::table('genres', function (Blueprint $table) {
+            $table->foreign('parent_id')
+                ->references('id')
+                ->on('genres')
+                ->onDelete('cascade');
         });
     }
 

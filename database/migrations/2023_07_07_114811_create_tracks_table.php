@@ -22,7 +22,8 @@ return new class extends Migration
             $table->foreignUuid('album_id')->nullable()->references('id')->on('albums');
             $table->foreignUuid('owner_id')->references('id')->on('artists');
             $table->foreignUuid('genre_id')->references('id')->on('genres');
-            $table->softDeletesDatetime();
+            
+            $table->softDeletes();
             $table->timestamps();
         });
     }

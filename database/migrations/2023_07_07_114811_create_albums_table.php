@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->year('release_year');
             $table->foreignUuid('artist_id')->references('id')->on('artists');
-            $table->softDeletesDatetime();
+            
+            $table->softDeletes();
             $table->timestamps();
         });
     }

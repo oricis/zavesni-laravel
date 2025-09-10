@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('explicit');
             $table->boolean('history');
 
-            $table->softDeletesDatetime();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
